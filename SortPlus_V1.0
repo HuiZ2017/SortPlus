@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+ @desc:
+ @author: ZhangHui
+ @contact: hui013@live.com
+ @file: Sort_plus.py
+ @time: 2020/01/08 10:50
+ """
+
+import tkinter as tk
+class SortPlus(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("排序 V1.0")
+        self.geometry("700x600")
+        self.status = tk.StringVar() #版权信息
+        self.SortOption = {'order':0,'repeat':0,'num':0} #排序参数
+        self.var = {'order':tk.IntVar(),'repeat':tk.IntVar(),'num':tk.IntVar()} #复选框的value
+        self.status.set('By Zhanghui')
+        self.inputstatus = tk.IntVar() #文本框内容大小
+        self.inputstatus1 = 0
+        self.InputContent = tk.StringVar()
+        self.lblStatus = tk.Label(self, textvariable=self.status)
+        self.ButtonFrame = tk.Frame(self,width=80,height=90)
+        self.MainFrame = tk.Frame(self)
+        self.bind("<Motion>", self.Refresh)
+        self.ButtonFrame.pack(side=tk.LEFT,anchor=tk.N)
+        self.MainFrame.pack(fill=tk.BOTH,expand=tk.YES)
+        self.lblStatus.pack(anchor=tk.SE)
+        #初始化Show框架
+        self.InitShowFrame()
+        #初始化按钮
+        self.InitButtonFrame()
+    def InitShowFrame(self):
+        self.InputText = tk.Text(self.MainFrame)
+        self.InputText.bind("<Control-Key-a>", self.selectText)
+        self.InputText.pack(fill=tk.BOTH,expand=tk.YES)
+    def InitButtonFrame(self):
+        tk.Button(self.ButtonFrame, text='Start',
+                       command=self.StartSort).pack(expand='no')
+        tk.Checkbutton(self.ButtonFrame, text="倒序",
+                       onvalue = 1, offvalue = 0,variable=self.var['order'],command=self.setSortOption).pack(anchor=tk.W)
+        tk.Checkbutton(self.ButtonFrame, text="去重",
+                       onvalue=1, offvalue=0, variable=self.var['repeat'], command=self.setSortOption).pack(anchor=tk.W)
+        tk.Checkbutton(self.ButtonFrame, text="数字",
+                       onvalue=1, offvalue=0, variable=self.var['num'], command=self.setSortOption).pack(anchor=tk.W)
+        self.StatusLab = tk.Label(self.ButtonFrame, textvariable=self.inputstatus)
+        self.StatusLab.pack(anchor=tk.W)
+    def GetShow(self):
+        var = []
+        result = self.InputText.get("1.0", "end").split('\n')
+        for ii in result:
+            if ii:
+                var.append(ii)
+        self.inputstatus1 = len(var)
+        return var
+    def setSortOption(self):
+        self.SortOption['order'] = self.var['order'].get()
+        self.SortOption['repeat'] = self.var['repeat'].get()
+        self.SortOption['num'] = self.var['num'].get()
+    def selectText(self, event):
+        self.InputText.tag_add('sel', '1.0', 'end')
+        return 'break'
+    def Refresh(self,event):
+        self.GetShow()
+        self.inputstatus.set("共: "+str(self.inputstatus1)+' 行')
+    def ClearShow(self):
+        self.InputText.delete(0.0, tk.END)
+    def ResultShow(self,res):
+        for ii in res:
+            self.InputText.insert(tk.END,str(ii)+'\n')
+    def StartSort(self):
+        var = self.GetShow()
+        if self.SortOption['repeat']:
+            var = list(set(var))
+        if self.SortOption['num']:
+            if not self.SortOption['order']:
+                var = sorted(var,key=self.tryint)  # ,key=self.tryint
+            else:
+                var = sorted(var,key=self.tryint, reverse=True)
+        else:
+            if not self.SortOption['order']:
+                var = sorted(var) #,key=self.tryint
+            else:
+                var = sorted(var,reverse=True)
+        self.ClearShow()
+        self.ResultShow(var)
+        self.inputstatus1 = len(var)
+
+    def tryint(self,s):
+        try:
+            return float(s)
+        except ValueError as e:
+            return s
+if __name__ == "__main__":
+    demo1 = SortPlus()
+    demo1.mainloop()
